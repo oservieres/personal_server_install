@@ -5,6 +5,7 @@
   remote_user: oservieres
   sudo: yes
   tasks:
+  - include_vars: vars.yml
   - name: install nginx
     apt: pkg=nginx state=latest
   - name: ensure nginx is running
@@ -14,8 +15,10 @@
     with_items:
     - mysql-client
     - mysql-server
+    - python-mysqldb
   - name: install php5
     apt: pkg=php5 state=latest
+  - mysql_user: name=root password={{ mysql_root_password }}
   handlers:
     - name: restart nginx
       service: name=nginx state=restarted
