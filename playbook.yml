@@ -1,0 +1,14 @@
+---
+- hosts: icarus2.deudtens.com
+  vars:
+    http_port: 80
+  remote_user: oservieres
+  sudo: yes
+  tasks:
+  - name: install nginx
+    apt: pkg=nginx state=latest
+  - name: ensure nginx is running
+    service: name=nginx state=started
+  handlers:
+    - name: restart nginx
+      service: name=nginx state=restarted
