@@ -19,6 +19,16 @@
   - mysql_user: name=root password={{ mysql_root_password }}
   - name: copy root password in my.cnf file
     template: src=templates/.my.cnf dest=/root/.my.cnf
+  - mysql_db: name=wp_california encoding=utf8 state=present
+  - mysql_user: name=wp_california password={{ mysql_wp_california_password }}
+  - mysql_db: name=wp_deudtens encoding=utf8 state=present
+  - mysql_user: name=wp_deudtens password={{ mysql_wp_deudtens_password }}
+  - mysql_db: name=wp_catalina encoding=utf8 state=present
+  - mysql_user: name=wp_catalina password={{ mysql_wp_catalina_password }}
+  - mysql_db: name=wp_maximemoreno encoding=utf8 state=present
+  - mysql_user: name=wp_maximemoreno password={{ mysql_wp_maximemoreno_password }}
+  - mysql_db: name=spacepicturesjam encoding=utf8 state=present
+  - mysql_user: name=spacepicturesjam password={{ mysql_spacepicturesjam_password }}
   - name: install php5
     apt: pkg=php5 state=latest
   handlers:
