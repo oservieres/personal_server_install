@@ -9,6 +9,13 @@
     apt: pkg=nginx state=latest
   - name: ensure nginx is running
     service: name=nginx state=started
+  - name: install mysql
+    apt: pkg={{ item }} state=latest
+    with_items:
+    - mysql-client
+    - mysql-server
+  - name: install php5
+    apt: pkg=php5 state=latest
   handlers:
     - name: restart nginx
       service: name=nginx state=restarted
