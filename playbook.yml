@@ -17,6 +17,8 @@
     - mysql-server
     - python-mysqldb
   - mysql_user: name=root password={{ mysql_root_password }}
+  - name: copy root password in my.cnf file
+    template: src=templates/.my.cnf dest=/root/.my.cnf
   - name: install php5
     apt: pkg=php5 state=latest
   handlers:
