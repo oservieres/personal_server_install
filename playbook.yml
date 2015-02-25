@@ -31,6 +31,11 @@
   - mysql_user: name=spacepicturesjam password={{ mysql_spacepicturesjam_password }}
   - name: install php5
     apt: pkg=php5 state=latest
+  - user: name=wp_california
+  - user: name=wp_deudtens
+  - user: name=wp_catalina
+  - user: name=wp_maximemoreno
+  - user: name=spacepicturesjam
   handlers:
     - name: restart nginx
       service: name=nginx state=restarted
