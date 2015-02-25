@@ -6,10 +6,7 @@
   sudo: yes
   tasks:
   - include_vars: vars.yml
-  - name: install nginx
-    apt: pkg=nginx state=latest
-  - name: ensure nginx is running
-    service: name=nginx state=started
+  # MySQL
   - name: install mysql
     apt: pkg={{ item }} state=latest
     with_items:
@@ -18,7 +15,7 @@
     - python-mysqldb
   - mysql_user: name=root password={{ mysql_root_password }}
   - name: copy root password in my.cnf file
-    template: src=templates/.my.cnf dest=/root/.my.cnf
+    template: src=templates/mysql/.my.cnf dest=/root/.my.cnf
   - mysql_db: name=wp_california encoding=utf8 state=present
   - mysql_user: name=wp_california password={{ mysql_wp_california_password }}
   - mysql_db: name=wp_deudtens encoding=utf8 state=present
@@ -29,16 +26,32 @@
   - mysql_user: name=wp_maximemoreno password={{ mysql_wp_maximemoreno_password }}
   - mysql_db: name=spacepicturesjam encoding=utf8 state=present
   - mysql_user: name=spacepicturesjam password={{ mysql_spacepicturesjam_password }}
+  # Sytem Users
   - user: name=wp_california
   - user: name=wp_deudtens
   - user: name=wp_catalina
   - user: name=wp_maximemoreno
   - user: name=spacepicturesjam
+  - user: name=pilotesdufeu
+  # PHP
   - name: install php5
     apt: pkg={{ item }} state=latest
     with_items:
     - php5
     - php5-mysql
+    - php5-fpm
+  # Nginx
+  - name: install nginx
+    apt: pkg=nginx state=latest
+  - name: ensure nginx is running
+    service: name=nginx state=started
+  # projects directories
+  - file: path=/home/wp_california/project state=directory owner=wp_california
+  - file: path=/home/wp_deudtens/project state=directory owner=wp_deudtens
+  - file: path=/home/wp_catalina/project state=directory owner=wp_catalina
+  - file: path=/home/wp_maximemoreno/project state=directory owner=wp_maximemoreno
+  - file: path=/home/spacepicturesjam/project/web state=directory owner=spacepicturesjam
+  - file: path=/home/pilotesdufeu/project/public_html state=directory owner=pilotesdufeu
   handlers:
     - name: restart nginx
       service: name=nginx state=restarted
