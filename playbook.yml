@@ -17,15 +17,15 @@
   - name: copy root password in my.cnf file
     template: src=templates/mysql/.my.cnf dest=/root/.my.cnf
   - mysql_db: name=wp_california encoding=utf8 state=present
-  - mysql_user: name=wp_california password={{ mysql_wp_california_password }}
+  - mysql_user: name=wp_california priv=wp_california.*:ALL password={{ mysql_wp_california_password }} state=present
   - mysql_db: name=wp_deudtens encoding=utf8 state=present
-  - mysql_user: name=wp_deudtens password={{ mysql_wp_deudtens_password }}
+  - mysql_user: name=wp_deudtens priv=wp_deudtens.*:ALL password={{ mysql_wp_deudtens_password }} state=present
   - mysql_db: name=wp_catalina encoding=utf8 state=present
-  - mysql_user: name=wp_catalina password={{ mysql_wp_catalina_password }}
+  - mysql_user: name=wp_catalina priv=wp_catalina.*:ALL password={{ mysql_wp_catalina_password }} state=present
   - mysql_db: name=wp_maximemoreno encoding=utf8 state=present
-  - mysql_user: name=wp_maximemoreno password={{ mysql_wp_maximemoreno_password }}
+  - mysql_user: name=wp_maximemoreno priv=wp_maximemoreno.*:ALL password={{ mysql_wp_maximemoreno_password }} state=present
   - mysql_db: name=spacepicturesjam encoding=utf8 state=present
-  - mysql_user: name=spacepicturesjam password={{ mysql_spacepicturesjam_password }}
+  - mysql_user: name=spacepicturesjam priv=spacepicturesjam.*:ALL password={{ mysql_spacepicturesjam_password }} state=present
   # Sytem Users
   - user: name=wp_california
   - user: name=wp_deudtens
@@ -33,6 +33,13 @@
   - user: name=wp_maximemoreno
   - user: name=spacepicturesjam
   - user: name=pilotesdufeu
+  # projects directories
+  - file: path=/home/wp_california/project state=directory owner=wp_california
+  - file: path=/home/wp_deudtens/project state=directory owner=wp_deudtens
+  - file: path=/home/wp_catalina/project state=directory owner=wp_catalina
+  - file: path=/home/wp_maximemoreno/project state=directory owner=wp_maximemoreno
+  - file: path=/home/spacepicturesjam/project/web state=directory owner=spacepicturesjam
+  - file: path=/home/pilotesdufeu/project state=directory owner=pilotesdufeu
   # PHP
   - name: install php5
     apt: pkg={{ item }} state=latest
@@ -40,18 +47,38 @@
     - php5
     - php5-mysql
     - php5-fpm
+    notify:
+    - restart php5-fpm
+  - name: ensure php5-fpm is running
+    action: service name=php5-fpm state=started
   # Nginx
   - name: install nginx
     apt: pkg=nginx state=latest
+  # Nginx common conf files
+  - file: path=/etc/nginx/common state=directory
+  - template: src=templates/nginx/common/restrictions.conf dest=/etc/nginx/common/restrictions.conf
+  - template: src=templates/nginx/common/wordpress.conf dest=/etc/nginx/common/wordpress.conf
+  - template: src=templates/nginx/nginx.conf dest=/etc/nginx/nginx.conf
+  # Nginx sites files
+  - template: src=templates/nginx/sites/wp_deudtens.conf dest=/etc/nginx/sites-available/wp_deudtens.conf
+  - file: src=/etc/nginx/sites-available/wp_deudtens.conf dest=/etc/nginx/sites-enabled/wp_deudtens.conf state=link
+  - template: src=templates/nginx/sites/wp_catalina.conf dest=/etc/nginx/sites-available/wp_catalina.conf
+  - file: src=/etc/nginx/sites-available/wp_catalina.conf dest=/etc/nginx/sites-enabled/wp_catalina.conf state=link
+  - template: src=templates/nginx/sites/wp_california.conf dest=/etc/nginx/sites-available/wp_california.conf
+  - file: src=/etc/nginx/sites-available/wp_california.conf dest=/etc/nginx/sites-enabled/wp_california.conf state=link
+  - template: src=templates/nginx/sites/wp_maximemoreno.conf dest=/etc/nginx/sites-available/wp_maximemoreno.conf
+  - file: src=/etc/nginx/sites-available/wp_maximemoreno.conf dest=/etc/nginx/sites-enabled/wp_maximemoreno.conf state=link
+  - template: src=templates/nginx/sites/pilotesdufeu.conf dest=/etc/nginx/sites-available/pilotesdufeu.conf
+  - file: src=/etc/nginx/sites-available/pilotesdufeu.conf dest=/etc/nginx/sites-enabled/pilotesdufeu.conf state=link
+  - template: src=templates/nginx/sites/spacepicturesjam.conf dest=/etc/nginx/sites-available/spacepicturesjam.conf
+  - file: src=/etc/nginx/sites-available/spacepicturesjam.conf dest=/etc/nginx/sites-enabled/spacepicturesjam.conf state=link
+    notify:
+    - restart nginx
+    - restart php5-fpm
   - name: ensure nginx is running
     service: name=nginx state=started
-  # projects directories
-  - file: path=/home/wp_california/project state=directory owner=wp_california
-  - file: path=/home/wp_deudtens/project state=directory owner=wp_deudtens
-  - file: path=/home/wp_catalina/project state=directory owner=wp_catalina
-  - file: path=/home/wp_maximemoreno/project state=directory owner=wp_maximemoreno
-  - file: path=/home/spacepicturesjam/project/web state=directory owner=spacepicturesjam
-  - file: path=/home/pilotesdufeu/project/public_html state=directory owner=pilotesdufeu
   handlers:
     - name: restart nginx
       service: name=nginx state=restarted
+    - name: restart php5-fpm
+      service: name=php5-fpm state=restarted
